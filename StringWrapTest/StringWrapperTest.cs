@@ -84,7 +84,9 @@ namespace StringWrapTest
         {
             get
             {
-                return Path.Combine(Environment.CurrentDirectory, "StringWrapTest");
+                return IsUnix
+                    ? "../.."
+                    : Path.Combine(Environment.CurrentDirectory, "StringWrapTest");
             }
         }
 
@@ -100,7 +102,8 @@ namespace StringWrapTest
         static IEnumerable<TestCaseData> TestCases()
         {
             bool isUnix = IsUnix;
-            foreach (var file in Directory.GetFiles(Path.Combine(ProjectRoot, "TestCases")))
+            string testCasesPath = Path.Combine(ProjectRoot, "TestCases");
+            foreach (var file in Directory.GetFiles(testCasesPath))
             {
                 var content = File.ReadAllText(file);
                 int textEnd = content.IndexOf("\n## WRAP_", StringComparison.InvariantCulture);
