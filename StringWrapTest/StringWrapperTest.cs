@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using NUnit.Framework;
 using StringWrap;
 
@@ -19,7 +17,7 @@ namespace StringWrapTest
         public string Expect { get; set; }
     }
 
-    [TestFixture()]
+    [TestFixture]
     public class StringWrapperTest
     {
         StringWrapper textWrapper;
@@ -82,9 +80,27 @@ namespace StringWrapTest
         }
 
         #region Helpers
+        static string ProjectRoot
+        {
+            get
+            {
+                return Path.Combine(Environment.CurrentDirectory, "StringWrapTest");
+            }
+        }
+
+        public static bool IsUnix
+        {
+            get
+            {
+                int p = (int)Environment.OSVersion.Platform;
+                return (p == 4) || (p == 6) || (p == 128);
+            }
+        }
+
         static IEnumerable<TestCaseData> TestCases()
         {
-            foreach (var file in Directory.GetFiles("../../TestCases"))
+            bool isUnix = IsUnix;
+            foreach (var file in Directory.GetFiles(Path.Combine(ProjectRoot, "TestCases")))
             {
                 var content = File.ReadAllText(file);
                 int textEnd = content.IndexOf("\n## WRAP_", StringComparison.InvariantCulture);
@@ -97,9 +113,9 @@ namespace StringWrapTest
                     var testCase = new TestCase
                     {
                         Name = Path.GetFileNameWithoutExtension(file),
-                        Input = content.Substring(0, textEnd),
+                        Input = content.Substring(0, textEnd - (isUnix ? 0 : 1)),
                         MaxLength = maxLength,
-                        Expect = content.Substring(textEnd + 16)
+                        Expect = content.Substring(textEnd + (IsUnix ? 16 : 17))
                     };
                     var testCaseData = new TestCaseData(testCase);
                     testCaseData.SetName(testCase.Name);
@@ -110,9 +126,9 @@ namespace StringWrapTest
 
         static void SaveTestResults(TestCase testCase)
         {
-            File.WriteAllText($"../../Results/{testCase.Name}.{testCase.MaxLength}.input.txt", testCase.Input);
-            File.WriteAllText($"../../Results/{testCase.Name}.{testCase.MaxLength}.output.txt", testCase.Output);
-            File.WriteAllText($"../../Results/{testCase.Name}.{testCase.MaxLength}.expect.txt", testCase.Expect);
+            File.WriteAllText($"{ProjectRoot}/Results/{testCase.Name}.{testCase.MaxLength}.input.txt", testCase.Input);
+            File.WriteAllText($"{ProjectRoot}/Results/{testCase.Name}.{testCase.MaxLength}.output.txt", testCase.Output);
+            File.WriteAllText($"{ProjectRoot}/Results/{testCase.Name}.{testCase.MaxLength}.expect.txt", testCase.Expect);
         }
         #endregion
     }
