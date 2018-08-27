@@ -1,0 +1,351 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace StringWrap
+{
+    enum TextType
+    {
+        Word,
+        Separator,
+        NewLine
+    }
+
+    class TextPart
+    {
+        public TextType TextType;
+        public string Text;
+
+        public int Length
+        {
+            get
+            {
+                return TextType == TextType.NewLine ? 0 : Text.Length;
+            }
+        }
+
+        public override string ToString()
+        {
+            return Text;
+        }
+    }
+
+    public class SmartWrapper : IStringWrapper
+    {
+        public string Wrap(string text, int maxLength)
+        {
+            return string.Join(Environment.NewLine, GetLines(text, maxLength));
+        }
+
+        IEnumerable<string> GetLines(string text, int maxLength)
+        {
+            var line = new StringBuilder();
+            foreach (var word in ParseText(text))
+            {
+                if (line.Length == maxLength)
+                {
+                    yield return line.ToString();
+                    line.Clear();
+                }
+
+                if (word.TextType == TextType.NewLine)
+                {
+                    yield return line.ToString();
+                    line.Clear();
+                    continue;
+                }
+
+                if (line.Length + word.Length <= maxLength)
+                {
+                    line.Append(word);
+                    continue;
+                }
+
+                if (word.TextType == TextType.Separator)
+                {
+                    int freeSpace = maxLength - line.Length;
+                    string firstPart = word.Text.Substring(0, freeSpace);
+                    string secondPart = word.Text.Substring(freeSpace);
+
+                    line.Append(firstPart);
+                    yield return line.ToString();
+                    line.Clear();
+
+                    line.Append(secondPart);
+                    continue;
+                }
+
+                if (word.TextType == TextType.Word)
+                {
+                    string wordText = word.Text;
+                    if (wordText.Length > maxLength) // word must be splitted anyway
+                    {
+                        int freeSpace = maxLength - line.Length;
+                        string firstPart = wordText.Substring(0, freeSpace);
+                        line.Append(firstPart);
+                        wordText = wordText.Substring(freeSpace);
+                    }
+
+                    var wordParts = SplitInto(wordText, maxLength);
+                    foreach (var wordPart in wordParts)
+                    {
+                        if (line.Length > 0)
+                        {
+                            yield return line.ToString();
+                            line.Clear();
+                        }
+                        line.Append(wordPart);
+                    }
+                    continue;
+                }
+            }
+
+            if (line.Length > 0)
+                yield return line.ToString();
+        }
+
+        IEnumerable<TextPart> ParseText(string text)
+        {
+            TextPart part = null;
+            TextType textType;
+            foreach (char c in text)
+            {
+                textType = DetectTextType(c);
+                if (part != null && part.TextType == textType)
+                {
+                    part.Text += c;
+                }
+                else
+                {
+                    if (part != null)
+                        yield return part;
+
+                    part = new TextPart
+                    {
+                        TextType = textType,
+                        Text = c.ToString()
+                    };
+                }
+            }
+
+            if (part != null)
+                yield return part;
+        }
+
+        static IEnumerable<string> SplitInto(string text, int length)
+        {
+            int partCount = (int)Math.Ceiling((float)text.Length / length);
+            for (int i = 0; i < partCount; i++)
+            {
+                if (i < partCount - 1)
+                    yield return text.Substring(i * length, length);
+                else
+                    yield return text.Substring(i * length);
+            }
+        }
+
+        static TextType DetectTextType(char c)
+        {
+            if (char.IsLetterOrDigit(c))
+                return TextType.Word;
+            else if (c == '\r' || c == '\n')
+                return TextType.NewLine;
+            else
+                return TextType.Separator;
+        }
+
+        public string Unwrap(string text, int maxLength)
+        {
+            return text;
+        }
+    }
+}
+
+## WRAP_050 ##
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace StringWrap
+{
+    enum TextType
+    {
+        Word,
+        Separator,
+        NewLine
+    }
+
+    class TextPart
+    {
+        public TextType TextType;
+        public string Text;
+
+        public int Length
+        {
+            get
+            {
+                return TextType == TextType.
+NewLine ? 0 : Text.Length;
+            }
+        }
+
+        public override string ToString()
+        {
+            return Text;
+        }
+    }
+
+    public class SmartWrapper : IStringWrapper
+    {
+        public string Wrap(string text, int 
+maxLength)
+        {
+            return string.Join(Environment.NewLine
+, GetLines(text, maxLength));
+        }
+
+        IEnumerable<string> GetLines(string text, 
+int maxLength)
+        {
+            var line = new StringBuilder();
+            foreach (var word in ParseText(text))
+            {
+                if (line.Length == maxLength)
+                {
+                    yield return line.ToString();
+                    line.Clear();
+                }
+
+                if (word.TextType == TextType.
+NewLine)
+                {
+                    yield return line.ToString();
+                    line.Clear();
+                    continue;
+                }
+
+                if (line.Length + word.Length <= 
+maxLength)
+                {
+                    line.Append(word);
+                    continue;
+                }
+
+                if (word.TextType == TextType.
+Separator)
+                {
+                    int freeSpace = maxLength - 
+line.Length;
+                    string firstPart = word.Text.
+Substring(0, freeSpace);
+                    string secondPart = word.Text.
+Substring(freeSpace);
+
+                    line.Append(firstPart);
+                    yield return line.ToString();
+                    line.Clear();
+
+                    line.Append(secondPart);
+                    continue;
+                }
+
+                if (word.TextType == TextType.Word
+)
+                {
+                    string wordText = word.Text;
+                    if (wordText.Length > 
+maxLength) // word must be splitted anyway
+                    {
+                        int freeSpace = maxLength 
+- line.Length;
+                        string firstPart = 
+wordText.Substring(0, freeSpace);
+                        line.Append(firstPart);
+                        wordText = wordText.
+Substring(freeSpace);
+                    }
+
+                    var wordParts = SplitInto(
+wordText, maxLength);
+                    foreach (var wordPart in 
+wordParts)
+                    {
+                        if (line.Length > 0)
+                        {
+                            yield return line.
+ToString();
+                            line.Clear();
+                        }
+                        line.Append(wordPart);
+                    }
+                    continue;
+                }
+            }
+
+            if (line.Length > 0)
+                yield return line.ToString();
+        }
+
+        IEnumerable<TextPart> ParseText(string 
+text)
+        {
+            TextPart part = null;
+            TextType textType;
+            foreach (char c in text)
+            {
+                textType = DetectTextType(c);
+                if (part != null && part.TextType 
+== textType)
+                {
+                    part.Text += c;
+                }
+                else
+                {
+                    if (part != null)
+                        yield return part;
+
+                    part = new TextPart
+                    {
+                        TextType = textType,
+                        Text = c.ToString()
+                    };
+                }
+            }
+
+            if (part != null)
+                yield return part;
+        }
+
+        static IEnumerable<string> SplitInto(
+string text, int length)
+        {
+            int partCount = (int)Math.Ceiling((
+float)text.Length / length);
+            for (int i = 0; i < partCount; i++)
+            {
+                if (i < partCount - 1)
+                    yield return text.Substring(i 
+* length, length);
+                else
+                    yield return text.Substring(i 
+* length);
+            }
+        }
+
+        static TextType DetectTextType(char c)
+        {
+            if (char.IsLetterOrDigit(c))
+                return TextType.Word;
+            else if (c == '\r' || c == '\n')
+                return TextType.NewLine;
+            else
+                return TextType.Separator;
+        }
+
+        public string Unwrap(string text, int 
+maxLength)
+        {
+            return text;
+        }
+    }
+}
