@@ -44,9 +44,9 @@ namespace StringWrap
             return string.Join(NewLine, lines);
         }
 
-        static IEnumerable<string> GetLines(string text, int maxLength)
+        IEnumerable<string> GetLines(string text, int maxLength)
         {
-            text = text.Replace("\t", "    ");
+            text = text.Replace("\t", new String(' ', TabSize));
 
             var line = new StringBuilder();
             bool endsWithNewLine = false;

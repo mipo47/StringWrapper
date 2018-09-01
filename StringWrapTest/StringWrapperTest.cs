@@ -51,6 +51,10 @@ namespace StringWrapTest
         {
             string result = textWrapper.Wrap("\tVALUE =\t1", 100);
             Assert.AreEqual("    VALUE =    1", result);
+
+            textWrapper.TabSize = 2;
+            result = textWrapper.Wrap("\tVALUE =\t1", 100);
+            Assert.AreEqual("  VALUE =  1", result);
         }
 
         [Test]
@@ -84,31 +88,21 @@ namespace StringWrapTest
         {
             get
             {
-                return IsUnix
-                    ? "../.."
-                    : Path.Combine(Environment.CurrentDirectory, "StringWrapTest");
-            }
-        }
-
-        public static bool IsUnix
-        {
-            get
-            {
-                int p = (int)Environment.OSVersion.Platform;
-                return (p == 4) || (p == 6) || (p == 128);
+                return Path.Combine(TestContext.CurrentContext.TestDirectory, "../..");
             }
         }
 
         static IEnumerable<TestCaseData> TestCases()
         {
-            bool isUnix = IsUnix;
             string testCasesPath = Path.Combine(ProjectRoot, "TestCases");
             foreach (var file in Directory.GetFiles(testCasesPath))
             {
                 var content = File.ReadAllText(file);
                 int textEnd = content.IndexOf("\n## WRAP_", StringComparison.InvariantCulture);
-                if (textEnd < 0)
+                if (textEnd < 1)
                     continue;
+
+                bool isUnixLineEnding = content[textEnd - 1] != '\r';
 
                 int maxLength;
                 if (int.TryParse(content.Substring(textEnd + 9, 3), out maxLength))
@@ -116,9 +110,9 @@ namespace StringWrapTest
                     var testCase = new TestCase
                     {
                         Name = Path.GetFileNameWithoutExtension(file),
-                        Input = content.Substring(0, textEnd - (isUnix ? 0 : 1)),
+                        Input = content.Substring(0, textEnd - (isUnixLineEnding ? 0 : 1)),
                         MaxLength = maxLength,
-                        Expect = content.Substring(textEnd + (IsUnix ? 16 : 17))
+                        Expect = content.Substring(textEnd + (isUnixLineEnding ? 16 : 17))
                     };
                     var testCaseData = new TestCaseData(testCase);
                     testCaseData.SetName(testCase.Name);
