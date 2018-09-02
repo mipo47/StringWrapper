@@ -54,7 +54,7 @@ namespace StringWrapTest
 is 
 very 
 long 
-text  
+text 
 examp
 le", result);
         }
