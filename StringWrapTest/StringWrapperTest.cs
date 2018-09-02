@@ -47,6 +47,19 @@ namespace StringWrapTest
         }
 
         [Test]
+        public void SimpleExample()
+        {
+            var result = textWrapper.Wrap("this is very long text example", 5);
+            Assert.AreEqual(@"this 
+is 
+very 
+long 
+text  
+examp
+le", result);
+        }
+
+        [Test]
         public void TabsToSpaces()
         {
             string result = textWrapper.Wrap("\tVALUE =\t1", 100);
